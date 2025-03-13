@@ -1,6 +1,5 @@
-import pypdf
-import os
+def main():
+    pass    
 
-pdf_path = "/home/alekseiostlund/pdf_to_csv_appender/testfiles/sampleform.pdf"
-pdf_reader = pypdf.PdfReader(pdf_path)
-
+if __name__ == "__main__":
+    main()
