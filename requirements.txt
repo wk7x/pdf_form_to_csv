@@ -1,2 +1,1 @@
-csv
-pypdf
+pypdf==5.3.1
