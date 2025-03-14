@@ -24,6 +24,7 @@ class TextProcessor:
     def __init__(self, text, form_type, normalize_spacing=True):
         self.text = text
         self.form_type = form_type
+        self.fields = list(self.field_markers[form_type].keys())
         self.extracted_data = {}
         if normalize_spacing:
             self.normalize_spacing()
@@ -31,7 +32,21 @@ class TextProcessor:
     def normalize_spacing(self):
         self.text = ' '.join(self.text.split())
 
+    def verify_form_type(self):
+        if self.form_type not in self.field_markers:
+            raise ValueError(f"Invalid form type: {self.form_type}")
+        
+        fieldcount = len(self.fields)
+        fieldsfound = 0
+        for field in self.fields:
+            if field in self.text:
+                fieldsfound += 1
+        if fieldsfound != fieldcount:
+            raise ValueError(f"Required fields not found in the form")
+
     def extract_data(self):
+        self.verify_form_type()
+        
         for start_word, end_word in self.field_markers[self.form_type].items():
             start_idx = self.text.index(start_word) + len(start_word)
             end_idx = self.text.index(end_word)
