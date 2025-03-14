@@ -4,6 +4,7 @@ from tkinter import ttk
 from pdf_extractor import PDFExtractor
 from text_processor import TextProcessor
 from csv_handler import CSVHandler
+import os
 
 class FormSelectionGUI:
     def __init__(self):
@@ -15,13 +16,19 @@ class FormSelectionGUI:
         self.input_label = tk.Label(self.root, text="Input PDF:")
         self.input_label.pack(pady=5)
         
+        # Input frame
         self.input_frame = tk.Frame(self.root)
         self.input_frame.pack(fill=tk.X, padx=5)
         
         self.input_path = tk.Entry(self.input_frame)
         self.input_path.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
-        self.input_button = tk.Button(self.input_frame, text="Browse", command=self.browse_input)
+        # Folder selection button
+        self.bulk_button = tk.Button(self.input_frame, text="Select Folder", command=self.browse_folder)
+        self.bulk_button.pack(side=tk.RIGHT, padx=5)
+        
+        # Single file selection button
+        self.input_button = tk.Button(self.input_frame, text="Select File", command=self.browse_input)
         self.input_button.pack(side=tk.RIGHT)
 
         # Output CSV file selection
@@ -56,12 +63,23 @@ class FormSelectionGUI:
         self.process_button = tk.Button(self.root, text="Process Form", command=self.process_form)
         self.process_button.pack(pady=5)
 
+    # single file selection
     def browse_input(self):
         filename = filedialog.askopenfilename(filetypes=[("PDF files", "*.pdf")])
         if filename:
             self.input_path.delete(0, tk.END)
             self.input_path.insert(0, filename)
+            self.log_message(f"Selected file: {filename}")
 
+    # folder selection
+    def browse_folder(self):
+        folder = filedialog.askdirectory(title="Select folder with PDFs of same format")
+        if folder:
+            self.input_path.delete(0, tk.END)
+            self.input_path.insert(0, folder)
+            self.log_message(f"Selected folder: {folder}")
+
+    # output file selection
     def browse_output(self):
         filename = filedialog.askopenfilename(
             filetypes=[("CSV files", "*.csv")],
@@ -77,31 +95,60 @@ class FormSelectionGUI:
         self.message_area.see(tk.END)  # Scroll to bottom
 
     def process_form(self):
-        input_file = self.input_path.get()
-        output_file = self.output_path.get()
+        input_path = self.input_path.get()
+        output_path = self.output_path.get()
         form_type = self.form_type.get()
         
-        if not input_file or not output_file or not form_type:
+        if not input_path or not output_path or not form_type:
             self.log_message("Error: Please fill in all fields")
             return
             
         try:
-            self.log_message(f"Processing {input_file}")
-            self.log_message(f"Output to: {output_file}")
+            self.log_message(f"Processing {input_path}")
+            self.log_message(f"Output to: {output_path}")
             self.log_message(f"Form type: {form_type}")
             
             # PROCESSING CODE
-            # extract text from pdf
-            form_extractor = PDFExtractor(input_file)
-            extracted_text = form_extractor.extract_text()
 
-            # process text
-            form_processor = TextProcessor(extracted_text, form_type)
-            processed_text = form_processor.extract_data()
+            # check if the input path is a directory
+            if os.path.isdir(input_path):
+                pdf_files = [file for file in os.listdir(input_path) if file.endswith(".pdf")]
 
-            # write to csv
-            csv_handler = CSVHandler(processed_text, output_file)
-            csv_handler.write_to_csv()
+                #if the selected directory is empty, show error and exit
+                if not pdf_files:
+                    self.log_message("Error: No PDF files in the folder")
+                    return
+                
+                self.log_message(f"Processing {len(pdf_files)} files")
+                
+                # process each pdf in the directory
+                for pdf_file in pdf_files:
+                    # extract text from pdf
+                    form_extractor = PDFExtractor(os.path.join(input_path, pdf_file))
+                    extracted_text = form_extractor.extract_text()
+
+                    # process text
+                    form_processor = TextProcessor(extracted_text, form_type)
+                    processed_text = form_processor.extract_data()
+
+                    # write to csv
+                    csv_handler = CSVHandler(processed_text, output_path)
+                    csv_handler.write_to_csv()                    
+                
+
+            # if not a directory process a single file
+            else:
+                # extract text from pdf
+                form_extractor = PDFExtractor(input_path)
+                extracted_text = form_extractor.extract_text()
+
+                # process text
+                form_processor = TextProcessor(extracted_text, form_type)
+                processed_text = form_processor.extract_data()
+
+                # write to csv
+                csv_handler = CSVHandler(processed_text, output_path)
+                csv_handler.write_to_csv()
             
             
             self.log_message("Success: File information was appended to the CSV file.")
