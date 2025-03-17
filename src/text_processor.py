@@ -64,3 +64,7 @@ class TextProcessor:
                 extracted_data = ""
             self.extracted_data[start_word] = extracted_data
         return self.extracted_data
+processor = TextProcessor(input_text, form_type)
+captured_values = processor.extract_data()
+captured_values_string = ", ".join(value for value in captured_values.values())
+print(captured_values_string)
