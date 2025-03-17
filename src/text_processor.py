@@ -29,9 +29,11 @@ class TextProcessor:
 
     def extract_data(self):
         self.verify_form_type()
-        
+
+        # Get the form markers for the form type
         form_markers = self.configs[self.form_type]
-        for field, (start_word, end_word) in form_markers.items():
+        
+        for column_name, [start_word, end_word] in form_markers.items():
             start_idx = self.text.index(start_word) + len(start_word)
             end_idx = self.text.index(end_word)
             extracted_data = self.text[start_idx:end_idx].strip()
@@ -46,6 +48,6 @@ class TextProcessor:
             # if no checkbox is filled out set the data to an empty string
             elif "☐" in extracted_data:
                 extracted_data = ""
-            self.extracted_data[field] = extracted_data
+            self.extracted_data[column_name] = extracted_data
         return self.extracted_data
     
