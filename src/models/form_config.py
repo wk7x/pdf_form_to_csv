@@ -4,12 +4,22 @@ import sys
 
 class FormConfig:
     def __init__(self):
-        if not sys.platform == "win32":
-            raise SystemError("This application is only supported on Windows")
+        if sys.platform == "linux":
+            # Use XDG_DATA_HOME for data files
+            config_dir = os.environ.get('XDG_DATA_HOME', 
+                                        os.path.join(os.path.expanduser('~'), '.local', 'share'))
+            config_dir = os.path.join(config_dir, 'PDFProcessor')
+            self.config_file_path = os.path.join(config_dir, 'form_configs.json')
+
+        elif sys.platform == "win32":
+            config_dir = os.path.join(os.environ.get('LOCALAPPDATA'), 'PDFProcessor')
+            self.config_file_path = os.path.join(config_dir, 'form_configs.json')
         
-        self.config_file_path = os.path.join(os.environ.get('APPDATA'),
-                                    'PDFProcessor',
-                                    'form_configs.json')
+        else:
+            raise SystemError(f"This application is only supported on windows or linux. You are running on {sys.platform}.")
+        
+        # Create directory in Linux home
+        os.makedirs(config_dir, exist_ok=True)
         
         self.default_configs = {
             "search_request_form": {
@@ -31,9 +41,6 @@ class FormConfig:
                 "cmv_status": ["CMV Status", "Patient"]
             }
         }
-
-        # Create PDFProcessor folder if it doesn't exist
-        os.makedirs(os.path.dirname(self.config_file_path), exist_ok=True)
 
         # Create config file if it doesn't exist
         if not os.path.exists(self.config_file_path):
