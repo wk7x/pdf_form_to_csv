@@ -133,7 +133,8 @@ class FormController:
         filename = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV files", "*.csv")],
-            title="Select or Create CSV File"
+            title="Select or Create CSV File",
+            confirmoverwrite=False  # This suppresses the incorrect overwrite warning
         )
         if filename:
             self.view.output_path.delete(0, tk.END)

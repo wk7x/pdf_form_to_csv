@@ -12,31 +12,45 @@ class PreviewDialog(tk.Toplevel):
         self._create_widgets()
 
     def _create_widgets(self):
-        # Create Treeview with scrollbar
+        # Create frame for treeview with both scrollbars
         tree_frame = ttk.Frame(self)
         tree_frame.pack(padx=10, pady=10, fill='both', expand=True)
         
-        self.tree = ttk.Treeview(tree_frame)
-        scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
+        # Create horizontal and vertical scrollbars
+        v_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical")
+        h_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal")
+        
+        # Create Treeview with both scrollbars
+        self.tree = ttk.Treeview(tree_frame, 
+                                yscrollcommand=v_scrollbar.set,
+                                xscrollcommand=h_scrollbar.set)
+        
+        # Configure scrollbar commands
+        v_scrollbar.config(command=self.tree.yview)
+        h_scrollbar.config(command=self.tree.xview)
         
         # Get headers from data
         headers = list(self.data.keys())
         self.tree["columns"] = headers
         
-        # Configure columns
+        # Configure columns - make them all same width and allow resize
         self.tree.column("#0", width=0, stretch=False)  # Hide first column
         for header in headers:
-            self.tree.column(header, width=150, minwidth=100)
+            self.tree.column(header, width=100, minwidth=50)
             self.tree.heading(header, text=header)
         
         # Add data row
         values = [self.data.get(header, "") for header in headers]
         self.tree.insert("", "end", values=values)
         
-        # Pack tree and scrollbar
-        self.tree.pack(side='left', fill='both', expand=True)
-        scrollbar.pack(side='right', fill='y')
+        # Grid layout for scrollable tree
+        self.tree.grid(row=0, column=0, sticky='nsew')
+        v_scrollbar.grid(row=0, column=1, sticky='ns')
+        h_scrollbar.grid(row=1, column=0, sticky='ew')
+        
+        # Configure grid weights
+        tree_frame.grid_rowconfigure(0, weight=1)
+        tree_frame.grid_columnconfigure(0, weight=1)
         
         # Buttons
         button_frame = ttk.Frame(self)
