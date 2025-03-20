@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from models.csv_handler import CSVHandler
+from views.style_config import StyleConfig
 
 class BulkPreviewDialog(tk.Toplevel):
     def __init__(self, parent, data_list, csv_path):
@@ -9,6 +10,8 @@ class BulkPreviewDialog(tk.Toplevel):
         self.geometry("800x600")
         self.data_list = data_list
         self.csv_path = csv_path
+        self.style_config = StyleConfig()
+        self.style_config.configure_window(self)
         self._create_widgets()
 
     def _create_widgets(self):
@@ -59,6 +62,7 @@ class BulkPreviewDialog(tk.Toplevel):
         button_frame.pack(pady=10)
         
         self.confirm_button = ttk.Button(button_frame, text="Confirm")
+        self.style_config.configure_button(self.confirm_button)
         self.confirm_button.pack(side='left', padx=5)
         
         ttk.Button(button_frame, text="Cancel", 

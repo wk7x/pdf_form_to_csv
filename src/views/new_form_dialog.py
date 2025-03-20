@@ -1,10 +1,13 @@
 import tkinter as tk
+from views.style_config import StyleConfig
 
 class NewFormDialog(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Add New PDF Form")
         self.geometry("600x400")
+        self.style_config = StyleConfig()
+        self.style_config.configure_window(self)
         self.column_entries = []
         self._create_widgets()
         self.add_column_row()
@@ -45,15 +48,18 @@ class NewFormDialog(tk.Toplevel):
 
         # Column name entry
         column_entry = tk.Entry(row_frame, width=20)
+        self.style_config.configure_entry(column_entry)
         column_entry.pack(side=tk.LEFT, padx=5)
 
         # Markers entry
         markers_entry = tk.Entry(row_frame, width=40)
+        self.style_config.configure_entry(markers_entry)
         markers_entry.pack(side=tk.LEFT, padx=5)
 
         # Remove button
         remove_btn = tk.Button(row_frame, text="X", 
                              command=lambda: self.remove_row(row_frame, column_entry, markers_entry))
+        self.style_config.configure_button(remove_btn)
         remove_btn.pack(side=tk.LEFT)
 
         # Store the entries

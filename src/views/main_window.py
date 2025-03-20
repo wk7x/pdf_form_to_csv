@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
+from views.style_config import StyleConfig
 
 class MainWindow(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Form Selection")
         self.geometry("400x400")
+        self.style_config = StyleConfig()
+        self.style_config.configure_window(self)
         self._create_widgets()
 
     def _create_widgets(self):
@@ -28,13 +31,13 @@ class MainWindow(tk.Tk):
         input_frame.pack(fill=tk.X, padx=5)
         
         self.input_path = tk.Entry(input_frame)
-        self.input_path.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.style_config.configure_entry(self.input_path)
         
         self.bulk_button = tk.Button(input_frame, text="Select Folder")
-        self.bulk_button.pack(side=tk.RIGHT, padx=5)
+        self.style_config.configure_button(self.bulk_button)
         
         self.input_button = tk.Button(input_frame, text="Select File")
-        self.input_button.pack(side=tk.RIGHT)
+        self.style_config.configure_button(self.input_button)
 
     def _create_output_section(self):
         tk.Label(self, text="Output CSV:").pack(pady=5)
