@@ -17,12 +17,13 @@ class TextProcessor:
 
     def verify_form_type(self):
         if self.form_type not in self.configs:
-            raise ValueError(f"Invalid form type: {self.form_type}")
+            raise ValueError(f"Form type not found in config file: {self.form_type}")
         
         fieldcount = len(self.fields)
         fieldsfound = 0
-        for field in self.fields:
-            if field in self.text:
+        formitems = self.configs[self.form_type].items()
+        for field, [start_word, end_word] in formitems:
+            if start_word in self.text and end_word in self.text:
                 fieldsfound += 1
         if fieldsfound != fieldcount:
             raise ValueError(f"Required fields not found in the form")

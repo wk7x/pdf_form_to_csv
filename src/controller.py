@@ -7,6 +7,8 @@ from models.form_config import FormConfig
 from models.pdf_extractor import PDFExtractor
 from models.text_processor import TextProcessor
 from models.csv_handler import CSVHandler
+from views.preview_dialog import PreviewDialog
+from views.bulk_preview_dialog import BulkPreviewDialog
 
 class FormController:
     def __init__(self):
@@ -82,8 +84,8 @@ class FormController:
         processor = TextProcessor(extracted_text, form_type)
         processed_text = processor.extract_data()
 
-        csv_handler = CSVHandler(processed_text, output_path)
-        csv_handler.write_to_csv()
+        # Show preview before saving
+        self._show_preview(processed_text, output_path)
 
     def _process_folder(self, folder_path, output_path, form_type):
         pdf_files = [f for f in os.listdir(folder_path) if f.endswith('.pdf')]
@@ -92,11 +94,24 @@ class FormController:
             return
 
         self.view.log_message(f"Processing {len(pdf_files)} files")
+        
+        # Process each file and collect data
+        all_data = []
         for pdf_file in pdf_files:
-            self._process_file(
-                os.path.join(folder_path, pdf_file),
-                output_path,
-                form_type
+            try:
+                extractor = PDFExtractor(os.path.join(folder_path, pdf_file))
+                extracted_text = extractor.extract_text()
+                processor = TextProcessor(extracted_text, form_type)
+                processed_text = processor.extract_data()
+                all_data.append(processed_text)
+            except Exception as e:
+                self.view.log_message(f"Error processing {pdf_file}: {str(e)}")
+        
+        # Create the preview dialog and pass the data
+        if all_data:
+            preview = BulkPreviewDialog(self.view, all_data, output_path)
+            preview.confirm_button.config(
+                command=lambda: self._save_bulk_to_csv(preview, all_data, output_path)
             )
 
     def _browse_input(self):
@@ -118,6 +133,24 @@ class FormController:
         if filename:
             self.view.output_path.delete(0, tk.END)
             self.view.output_path.insert(0, filename)
+
+    def _show_preview(self, data, output_path):
+        preview = PreviewDialog(self.view, data, output_path)
+        preview.confirm_button.config(
+            command=lambda: self._save_to_csv(preview, data, output_path)
+        )
+
+    def _save_to_csv(self, preview_window, data, output_path):
+        csv_handler = CSVHandler(data, output_path)
+        csv_handler.write_to_csv()
+        preview_window.destroy()
+        self.view.log_message("1 row appended to CSV file successfully.")
+
+    def _save_bulk_to_csv(self, preview_window, data_list, output_path):
+        csv_handler = CSVHandler(data_list, output_path)
+        csv_handler.write_to_csv()
+        preview_window.destroy()
+        self.view.log_message(f"{len(data_list)} rows appended to CSV file successfully.")
 
     def run(self):
         self.view.mainloop() 

@@ -15,6 +15,9 @@ class MainWindow(tk.Tk):
         self._create_output_section()
         # Form type section
         self._create_form_section()
+        # Process button - Add this before message section
+        self.process_button = tk.Button(self, text="Process Form", width=20)
+        self.process_button.pack(pady=10)
         # Message section
         self._create_message_section()
 
@@ -57,9 +60,6 @@ class MainWindow(tk.Tk):
         tk.Label(self, text="Messages:").pack(pady=5)
         self.message_area = tk.Text(self, height=8, width=45)
         self.message_area.pack(pady=5, padx=5)
-        
-        self.process_button = tk.Button(self, text="Process Form")
-        self.process_button.pack(pady=5)
 
     def log_message(self, message):
         self.message_area.insert(tk.END, message + '\n')
