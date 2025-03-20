@@ -20,13 +20,15 @@ class CSVHandler:
             writer = csv.writer(f)
             
             # Only write headers if file doesn't exist or is empty
-            if not file_exists and isinstance(self.extracted_data, dict):
-                writer.writerow(list(self.extracted_data.keys()))
+            if not file_exists:
+                if isinstance(self.extracted_data, dict):
+                    writer.writerow(list(self.extracted_data.keys()))
+                elif isinstance(self.extracted_data, list) and self.extracted_data:
+                    writer.writerow(list(self.extracted_data[0].keys()))
             
-            # Handle both single dict and list of dicts
+            # Write the data
             if isinstance(self.extracted_data, dict):
                 writer.writerow(list(self.extracted_data.values()))
             elif isinstance(self.extracted_data, list):
-                # For bulk processing, write each row
                 for data in self.extracted_data:
                     writer.writerow(list(data.values())) 
