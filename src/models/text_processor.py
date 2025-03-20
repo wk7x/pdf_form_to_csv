@@ -1,4 +1,4 @@
-from form_config import FormConfig
+from models.form_config import FormConfig
 
 class TextProcessor:
     

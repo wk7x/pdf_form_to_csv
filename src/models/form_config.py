@@ -62,10 +62,10 @@ class FormConfig:
             if not isinstance(markers, list) or len(markers) != 2:
                 raise ValueError(f"Start and end markers for column '{column}' must be a list of [start, end]")
         
-        # Add new pdf form key to the config
+        # Add new pdf form to the configs
         configs = self.get_configs()
         configs[form_name] = column_marker_dict
 
-        # Update the config file
+        # Update the config json file
         with open(self.config_file_path, 'w') as f:
             json.dump(configs, f, indent=4)

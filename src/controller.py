@@ -1,0 +1,123 @@
+import os
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from views.main_window import MainWindow
+from views.new_form_dialog import NewFormDialog
+from models.form_config import FormConfig
+from models.pdf_extractor import PDFExtractor
+from models.text_processor import TextProcessor
+from models.csv_handler import CSVHandler
+
+class FormController:
+    def __init__(self):
+        self.view = MainWindow()
+        
+        self.form_config = FormConfig()
+        
+        self._bind_events()
+        
+        self._update_form_list()
+
+    def _bind_events(self):
+        self.view.add_form_button.config(command=self._show_new_form)
+        self.view.process_button.config(command=self._process_form)
+        self.view.input_button.config(command=self._browse_input)
+        self.view.bulk_button.config(command=self._browse_folder)
+        self.view.output_button.config(command=self._browse_output)
+
+    def _update_form_list(self):
+        forms = self.form_config.get_configs()
+        self.view.form_type['values'] = list(forms.keys())
+
+    def _show_new_form(self):
+        dialog = NewFormDialog(self.view)
+        dialog.save_button.config(command=lambda: self._save_new_form(dialog))
+
+    def _save_new_form(self, dialog):
+        form_name = dialog.name_entry.get().strip()
+        if not form_name:
+            messagebox.showerror("Error", "Please enter a form name")
+            return
+
+        configs = {}
+        for col_entry, marker_entry in dialog.column_entries:
+            col_name = col_entry.get().strip()
+            markers = marker_entry.get().strip().split(',')
+            if col_name and len(markers) == 2:
+                configs[col_name] = [m.strip() for m in markers]
+
+        if not configs:
+            messagebox.showerror("Error", "Please add at least one valid column")
+            return
+
+        try:
+            self.form_config.save_new_form(form_name, configs)
+            self._update_form_list()
+            dialog.destroy()
+            messagebox.showinfo("Success", "Form saved successfully")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def _process_form(self):
+        input_path = self.view.input_path.get()
+        output_path = self.view.output_path.get()
+        form_type = self.view.form_type.get()
+        
+        if not all([input_path, output_path, form_type]):
+            self.view.log_message("Error: Please fill in all fields")
+            return
+            
+        try:
+            if os.path.isdir(input_path):
+                self._process_folder(input_path, output_path, form_type)
+            else:
+                self._process_file(input_path, output_path, form_type)
+        except Exception as e:
+            self.view.log_message(f"Error: {str(e)}")
+
+    def _process_file(self, input_path, output_path, form_type):
+        extractor = PDFExtractor(input_path)
+        extracted_text = extractor.extract_text()
+
+        processor = TextProcessor(extracted_text, form_type)
+        processed_text = processor.extract_data()
+
+        csv_handler = CSVHandler(processed_text, output_path)
+        csv_handler.write_to_csv()
+
+    def _process_folder(self, folder_path, output_path, form_type):
+        pdf_files = [f for f in os.listdir(folder_path) if f.endswith('.pdf')]
+        if not pdf_files:
+            self.view.log_message("Error: No PDF files in the folder")
+            return
+
+        self.view.log_message(f"Processing {len(pdf_files)} files")
+        for pdf_file in pdf_files:
+            self._process_file(
+                os.path.join(folder_path, pdf_file),
+                output_path,
+                form_type
+            )
+
+    def _browse_input(self):
+        filename = filedialog.askopenfilename(filetypes=[("PDF files", "*.pdf")])
+        if filename:
+            self.view.input_path.delete(0, tk.END)
+            self.view.input_path.insert(0, filename)
+            self.view.log_message(f"Selected file: {filename}")
+
+    def _browse_folder(self):
+        folder = filedialog.askdirectory()
+        if folder:
+            self.view.input_path.delete(0, tk.END)
+            self.view.input_path.insert(0, folder)
+            self.view.log_message(f"Selected folder: {folder}")
+
+    def _browse_output(self):
+        filename = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        if filename:
+            self.view.output_path.delete(0, tk.END)
+            self.view.output_path.insert(0, filename)
+
+    def run(self):
+        self.view.mainloop() 

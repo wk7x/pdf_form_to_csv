@@ -1,7 +1,7 @@
-from gui import FormSelectionGUI
+from controller import FormController
 
 def main():
-    app = FormSelectionGUI()
+    app = FormController()
     app.run()
 
 if __name__ == "__main__":
