@@ -22,6 +22,7 @@ class FormController:
 
     def _bind_events(self):
         self.view.add_form_button.config(command=self._show_new_form)
+        self.view.delete_form_button.config(command=self._delete_form)
         self.view.process_button.config(command=self._process_form)
         self.view.input_button.config(command=self._browse_input)
         self.view.bulk_button.config(command=self._browse_folder)
@@ -129,7 +130,11 @@ class FormController:
             self.view.log_message(f"Selected folder: {folder}")
 
     def _browse_output(self):
-        filename = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv")],
+            title="Select or Create CSV File"
+        )
         if filename:
             self.view.output_path.delete(0, tk.END)
             self.view.output_path.insert(0, filename)
@@ -151,6 +156,22 @@ class FormController:
         csv_handler.write_to_csv()
         preview_window.destroy()
         self.view.log_message(f"{len(data_list)} rows appended to CSV file successfully.")
+
+    def _delete_form(self):
+        form_type = self.view.form_type.get()
+        if not form_type:
+            messagebox.showerror("Error", "Please select a form to delete")
+            return
+        
+        # Ask for confirmation
+        if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the form '{form_type}'?"):
+            try:
+                self.form_config.delete_form(form_type)
+                self._update_form_list()
+                self.view.form_type.set('')  # Clear the selection
+                messagebox.showinfo("Success", f"Form '{form_type}' deleted successfully")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
     def run(self):
         self.view.mainloop() 

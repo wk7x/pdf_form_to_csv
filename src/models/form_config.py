@@ -71,3 +71,13 @@ class FormConfig:
         # Update the config json file
         with open(self.config_file_path, 'w') as f:
             json.dump(configs, f, indent=4)
+
+    def delete_form(self, form_name):
+        """Delete a form from the config file."""
+        configs = self.get_configs()
+        if form_name in configs:
+            del configs[form_name]
+            with open(self.config_file_path, 'w') as f:
+                json.dump(configs, f, indent=4)
+        else:
+            raise ValueError(f"Form '{form_name}' not found")

@@ -53,8 +53,15 @@ class MainWindow(tk.Tk):
         self.form_type = ttk.Combobox(self)
         self.form_type.pack(pady=5)
         
-        self.add_form_button = tk.Button(self, text="Add New Form")
-        self.add_form_button.pack(pady=5)
+        # Create frame for form buttons
+        form_buttons = tk.Frame(self)
+        form_buttons.pack(pady=5)
+        
+        self.add_form_button = tk.Button(form_buttons, text="Add New Form")
+        self.add_form_button.pack(side=tk.LEFT, padx=5)
+        
+        self.delete_form_button = tk.Button(form_buttons, text="Delete Form")
+        self.delete_form_button.pack(side=tk.LEFT, padx=5)
 
     def _create_message_section(self):
         tk.Label(self, text="Messages:").pack(pady=5)
