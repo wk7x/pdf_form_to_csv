@@ -31,12 +31,15 @@ class MainWindow(tk.Tk):
         input_frame.pack(fill=tk.X, padx=5)
         
         self.input_path = tk.Entry(input_frame)
+        self.input_path.pack(side=tk.LEFT, fill=tk.X, expand=True)
         self.style_config.configure_entry(self.input_path)
         
         self.bulk_button = tk.Button(input_frame, text="Select Folder")
+        self.bulk_button.pack(side=tk.RIGHT, padx=5)
         self.style_config.configure_button(self.bulk_button)
         
         self.input_button = tk.Button(input_frame, text="Select File")
+        self.input_button.pack(side=tk.RIGHT)
         self.style_config.configure_button(self.input_button)
 
     def _create_output_section(self):

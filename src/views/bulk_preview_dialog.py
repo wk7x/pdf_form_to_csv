@@ -61,9 +61,9 @@ class BulkPreviewDialog(tk.Toplevel):
         button_frame = ttk.Frame(self)
         button_frame.pack(pady=10)
         
-        self.confirm_button = ttk.Button(button_frame, text="Confirm")
+        self.confirm_button = tk.Button(button_frame, text="Confirm")
         self.style_config.configure_button(self.confirm_button)
         self.confirm_button.pack(side='left', padx=5)
         
-        ttk.Button(button_frame, text="Cancel", 
+        tk.Button(button_frame, text="Cancel", 
                   command=self.destroy).pack(side='left', padx=5) 
